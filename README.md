@@ -47,20 +47,6 @@ Alert levels were chosen on validation and applied to the test period:
 
 \*Missed fraud costs its amount; each false alarm costs $10 of review time.
 
-### How the model improved
-
-| Version | Leakage-free | Test PR-AUC | Fraud caught at 1% false alarms |
-|---|---|---|---|
-| 1. Basic LightGBM | Yes | 0.559 | – |
-| 2. Better features + Optuna tuning | Yes | 0.677 | 61.3% |
-| 3. Tuned LightGBM vs CatBoost vs blend | Yes | 0.676 | 60.7% |
-| 4. Customer history, 1-day labels | No (used future data) | 0.811 | 74.6% |
-| **Final** | **Yes** | **0.744** | **67.2%** |
-
-Version 4 looked better but used each customer's future payments and assumed fraud
-is confirmed within a day. The final version removes both, so its number is the one
-to trust.
-
 ## Project structure
 
 ```
@@ -79,9 +65,9 @@ models/metadata.json          features, category encodings, alert levels, metric
 pip install -r requirements.txt
 
 # Put train_transaction.csv and train_identity.csv from Kaggle in data/
-python -m pytest tests -q                 # leakage tests
-python -m src.train --data data --out models
-python -m src.predict --history data --new new_payments.csv --out scored.csv
+python -m pytest tests -q     # leakage tests
+python -m src.train           # trains and saves models/fraud_lgbm.txt + models/metadata.json
+python -m src.predict         # scores new_payments.csv -> scored.csv (file names are set at the top of src/predict.py)
 ```
 
 `scored.csv` contains `fraud_score`, `flag_1pct_fpr`, `flag_cost_optimal` and
